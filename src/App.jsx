@@ -373,10 +373,27 @@ function DocumentDetailPage() {
 
 function TermsPage() {
   const [letter,setLetter]=useState('全部')
+  const [activeType,setActiveType]=useState('国家标准')
+  const standardTypes = [
+    {name:'国家标准', count:126, icon:BookOpen, text:'国家标准化管理机构发布的金融及数据标准'},
+    {name:'行业标准', count:84, icon:Building2, text:'金融行业与银行业通用的数据和业务标准'},
+    {name:'监管指标', count:426, icon:Activity, text:'监管制度、报表及监测体系中的指标口径'},
+  ]
+  const visibleTerms = terms.filter(item=>item.type===activeType)
   return <><PageHeader eyebrow="GLOSSARY" title="监管术语与标准" description="统一查询监管术语的中英文名称、缩写、定义及制度出处。" />
     <FilterBar placeholder="搜索术语、英文名称、缩写或别名"><Select label="主题"><option>资本监管</option><option>流动性风险</option></Select></FilterBar>
-    <div className="alphabet-bar">{['全部','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'].map(x=><button className={letter===x?'active':''} onClick={()=>setLetter(x)} key={x}>{x}</button>)}</div>
-    <div className="terms-grid">{terms.map((item,i)=><article className="term-card" key={item.term}><div className="term-number">{String(i+1).padStart(2,'0')}</div><Badge tone="blue">{item.category}</Badge><h3>{item.term}</h3><span className="term-en">{item.en}</span><p>{item.definition}</p><footer><span><BookOpen size={14}/>{item.source}</span><ArrowRight size={15}/></footer></article>)}</div>
+    <div className="standards-layout">
+      <aside className="standards-sidebar" aria-label="标准分类">
+        <div className="standards-sidebar-title"><span>标准类型</span><small>3 个分类</small></div>
+        <nav>{standardTypes.map(item=><button key={item.name} className={activeType===item.name?'active':''} onClick={()=>setActiveType(item.name)}><span className="standard-type-icon"><item.icon size={18}/></span><span><b>{item.name}</b><small>{item.text}</small></span><strong>{item.count}</strong><ChevronRight size={15}/></button>)}</nav>
+        <div className="standards-sidebar-note"><ShieldCheck size={17}/><span><b>标准口径提示</b><small>优先采用现行有效版本，历史版本仅供追溯。</small></span></div>
+      </aside>
+      <section className="standards-content">
+        <div className="standards-content-head"><div><span className="eyebrow">STANDARD CATEGORY</span><h2>{activeType}</h2><p>{standardTypes.find(item=>item.name===activeType)?.text}</p></div><span>共 <b>{standardTypes.find(item=>item.name===activeType)?.count}</b> 项</span></div>
+        <div className="alphabet-bar">{['全部','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'].map(x=><button className={letter===x?'active':''} onClick={()=>setLetter(x)} key={x}>{x}</button>)}</div>
+        <div className="terms-grid">{visibleTerms.map((item,i)=><article className="term-card" key={item.term}><div className="term-number">{String(i+1).padStart(2,'0')}</div><div className="term-badges"><Badge tone={activeType==='监管指标'?'amber':activeType==='行业标准'?'green':'blue'}>{item.type}</Badge><Badge>{item.category}</Badge></div><h3>{item.term}</h3><span className="term-en">{item.en}</span><p>{item.definition}</p><footer><span><BookOpen size={14}/>{item.source}</span><ArrowRight size={15}/></footer></article>)}</div>
+      </section>
+    </div>
   </>
 }
 

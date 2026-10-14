@@ -7,11 +7,15 @@ export const documents = [
 ]
 
 export const terms = [
-  { term: '核心一级资本充足率', en: 'CET1 Capital Adequacy Ratio', category: '资本监管', definition: '核心一级资本净额与风险加权资产之间的比率。', source: '商业银行资本管理办法' },
-  { term: '流动性覆盖率', en: 'Liquidity Coverage Ratio, LCR', category: '流动性风险', definition: '合格优质流动性资产与未来30日现金净流出量的比率。', source: '商业银行流动性风险管理办法' },
-  { term: '大额风险暴露', en: 'Large Exposure', category: '信用风险', definition: '商业银行对单一客户或一组关联客户超过一定比例的信用风险暴露。', source: '商业银行大额风险暴露管理办法' },
-  { term: '监管数据', en: 'Regulatory Data', category: '数据治理', definition: '银行业金融机构按照监管要求向监管部门报送的数据。', source: '银行业金融机构数据治理指引' },
-  { term: '风险加权资产', en: 'Risk-weighted Assets, RWA', category: '资本监管', definition: '按照信用风险、市场风险和操作风险计量规则计算的风险资产总额。', source: '商业银行资本管理办法' },
+  { term: '金融机构编码', en: 'Financial Institution Identifier', type: '国家标准', category: '基础数据', definition: '用于唯一标识金融机构及其分支机构的标准化编码体系。', source: '金融机构编码规范' },
+  { term: '金融工具统计分类', en: 'Classification of Financial Instruments', type: '国家标准', category: '金融统计', definition: '按照金融工具的法律属性、流动性和风险特征形成的统一统计分类。', source: '金融工具统计分类及编码' },
+  { term: '数据元', en: 'Data Element', type: '国家标准', category: '数据治理', definition: '由一组属性规定其定义、标识、表示和允许值的数据单元。', source: '信息技术 数据元规范' },
+  { term: '监管数据', en: 'Regulatory Data', type: '行业标准', category: '数据治理', definition: '银行业金融机构按照监管要求向监管部门报送的数据。', source: '银行业金融机构数据治理指引' },
+  { term: '客户统一标识', en: 'Unified Customer Identifier', type: '行业标准', category: '客户管理', definition: '在银行业务系统中用于统一识别同一客户主体的行业数据标识。', source: '银行业数据标准体系' },
+  { term: '大额风险暴露', en: 'Large Exposure', type: '行业标准', category: '信用风险', definition: '商业银行对单一客户或一组关联客户超过一定比例的信用风险暴露。', source: '商业银行大额风险暴露管理办法' },
+  { term: '核心一级资本充足率', en: 'CET1 Capital Adequacy Ratio', type: '监管指标', category: '资本监管', definition: '核心一级资本净额与风险加权资产之间的比率。', source: '商业银行资本管理办法' },
+  { term: '流动性覆盖率', en: 'Liquidity Coverage Ratio, LCR', type: '监管指标', category: '流动性风险', definition: '合格优质流动性资产与未来30日现金净流出量的比率。', source: '商业银行流动性风险管理办法' },
+  { term: '风险加权资产', en: 'Risk-weighted Assets, RWA', type: '监管指标', category: '资本监管', definition: '按照信用风险、市场风险和操作风险计量规则计算的风险资产总额。', source: '商业银行资本管理办法' },
 ]
 
 export const reports = [
