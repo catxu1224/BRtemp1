@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import {
   Activity, AlertCircle, ArrowRight, BarChart3, Bell, BookOpen, Bookmark,
@@ -6,7 +6,7 @@ import {
   ClipboardCheck, Clock3, Database, Download, Edit3, ExternalLink, FileBarChart,
   FileCheck2, FileSearch, FileText, Filter, Gauge, GitBranch, History, Home,
   Landmark, LayoutDashboard, Library, ListChecks, LockKeyhole, Menu, MessageSquare,
-  Network, PanelLeftClose, PanelLeftOpen, Plus, RefreshCw, RotateCcw, Search,
+  Network, Plus, RefreshCw, RotateCcw, Search,
   Settings, ShieldCheck, SlidersHorizontal, Sparkles, Tags, Upload, UserCog,
   Users, X, Zap,
 } from 'lucide-react'
@@ -52,14 +52,31 @@ const adminNav = [
   { label: '系统配置', icon: Settings, to: '/admin/settings' },
 ]
 
+const userPrimaryNav = [
+  { label: '工作台', to: '/' },
+  { label: '制度知识', to: '/knowledge/docs', match: '/knowledge/', children: userNav.slice(3, 7) },
+  { label: '监管数据', to: '/regulatory/reports', match: '/regulatory/', children: userNav.slice(8, 12) },
+  { label: '研究分析', to: '/analysis/penalties', match: '/analysis/', children: userNav.slice(13, 17) },
+  { label: 'AI 工作台', to: '/ai' },
+  { label: '收藏与历史', to: '/favorites' },
+]
+
+const adminPrimaryNav = [
+  { label: '管理概览', to: '/admin' },
+  { label: '内容管理', to: '/admin/documents', match: '/admin/content', children: [adminNav[1], adminNav[3], adminNav[4]] },
+  { label: '报表配置', to: '/admin/reports' },
+  { label: '用户管理', to: '/admin/users' },
+  { label: '系统配置', to: '/admin/settings' },
+]
+
 const topicColors = {
   green: 'var(--green)', blue: 'var(--blue)', amber: 'var(--amber)', red: 'var(--red)',
 }
 
-function Logo({ compact }) {
+function Logo() {
   return <div className="brand">
     <span className="brand-mark"><Landmark size={20} strokeWidth={2.1} /></span>
-    {!compact && <span><b>银规智库</b><small>Bank Regulatory Intelligence</small></span>}
+    <span><b>银规智库</b><small>Bank Regulatory Intelligence</small></span>
   </div>
 }
 
@@ -71,50 +88,61 @@ function AppShell({ children }) {
   const location = useLocation()
   const navigate = useNavigate()
   const isAdmin = location.pathname.startsWith('/admin')
-  const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const nav = isAdmin ? adminNav : userNav
+  const mobileNav = isAdmin ? adminNav : userNav
+  const primaryNav = isAdmin ? adminPrimaryNav : userPrimaryNav
 
   const switchMode = () => navigate(isAdmin ? '/' : '/admin')
+  const isPrimaryActive = (item) => item.to === '/'
+    ? location.pathname === '/'
+    : item.to === '/admin'
+      ? location.pathname === '/admin'
+      : item.match
+        ? item.children?.some(child => location.pathname === child.to)
+        : location.pathname === item.to
 
-  return <div className={`app-shell ${collapsed ? 'sidebar-collapsed' : ''}`}>
+  return <div className="app-shell">
     {mobileOpen && <button className="mobile-overlay" onClick={() => setMobileOpen(false)} aria-label="关闭菜单" />}
-    <aside className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}>
-      <div className="sidebar-head">
-        <Logo compact={collapsed} />
+    <aside className={`mobile-drawer ${mobileOpen ? 'mobile-open' : ''}`}>
+      <div className="mobile-drawer-head">
+        <Logo />
         <button className="icon-button close-mobile" onClick={() => setMobileOpen(false)} aria-label="关闭菜单"><X size={18} /></button>
       </div>
-      <nav className="nav-list">
-        {nav.map((item, index) => item.group
-          ? (!collapsed && <div className="nav-group" key={`${item.group}-${index}`}>{item.group}</div>)
-          : <NavLink key={item.to} to={item.to} end={item.to === '/' || item.to === '/admin'} title={collapsed ? item.label : undefined} onClick={() => setMobileOpen(false)} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-              <item.icon size={18} />{!collapsed && <span>{item.label}</span>}
+      <nav className="mobile-nav-list">
+        {mobileNav.map((item, index) => item.group
+          ? <div className="mobile-nav-group" key={`${item.group}-${index}`}>{item.group}</div>
+          : <NavLink key={item.to} to={item.to} end={item.to === '/' || item.to === '/admin'} onClick={() => setMobileOpen(false)} className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+              <item.icon size={18} /><span>{item.label}</span>
             </NavLink>)}
       </nav>
-      <div className="sidebar-foot">
-        <button className="mode-switch" onClick={switchMode}>
+      <div className="mobile-drawer-foot">
+        <button className="mode-switch" onClick={() => { switchMode(); setMobileOpen(false) }}>
           {isAdmin ? <Home size={17} /> : <UserCog size={17} />}
-          {!collapsed && <span>{isAdmin ? '返回用户端' : '进入管理后台'}</span>}
-        </button>
-        <button className="collapse-button" onClick={() => setCollapsed(!collapsed)} aria-label={collapsed ? '展开侧栏' : '收起侧栏'}>
-          {collapsed ? <PanelLeftOpen size={17} /> : <><PanelLeftClose size={17} /><span>收起菜单</span></>}
+          <span>{isAdmin ? '返回用户端' : '进入管理后台'}</span>
         </button>
       </div>
     </aside>
-    <section className="main-shell">
-      <header className="topbar">
-        <div className="topbar-left">
-          <button className="icon-button menu-mobile" onClick={() => setMobileOpen(true)} aria-label="打开菜单"><Menu size={20} /></button>
-          <div className="scope-chip"><span className={`status-dot ${isAdmin ? 'admin-dot' : ''}`} />{isAdmin ? '管理员工作区' : '知识查询工作区'}</div>
-        </div>
+    <header className="topbar">
+      <div className="topbar-inner">
+        <button className="icon-button menu-mobile" onClick={() => setMobileOpen(true)} aria-label="打开菜单"><Menu size={20} /></button>
+        <button className="brand-button" onClick={() => navigate(isAdmin ? '/admin' : '/')} aria-label="返回首页"><Logo /></button>
+        <nav className="primary-nav" aria-label="一级菜单">
+          {primaryNav.map(item => <div className={`primary-nav-entry ${isPrimaryActive(item) ? 'active' : ''}`} key={item.label}>
+            <NavLink to={item.to} end={item.to === '/' || item.to === '/admin'}>{item.label}{item.children && <ChevronDown size={14} />}</NavLink>
+            {item.children && <div className="nav-dropdown">
+              {item.children.map(child => <NavLink key={child.to} to={child.to} className={({ isActive }) => isActive ? 'active' : ''}><child.icon size={17}/><span><b>{child.label}</b><small>{child.to.includes('docs') ? '制度原文、版本与条款' : child.to.includes('reports') ? '报表、字段与校验规则' : child.to.includes('penalties') ? '处罚案例与多维分析' : '进入对应业务模块'}</small></span><ChevronRight size={14}/></NavLink>)}
+            </div>}
+          </div>)}
+        </nav>
         <div className="topbar-actions">
-          <button className="global-search" onClick={() => navigate('/search')}><Search size={16} /><span>搜索制度、报表、指标</span><kbd>Ctrl K</kbd></button>
+          {!isAdmin && <button className="global-search" onClick={() => navigate('/search')}><Search size={16} /><span>搜索制度、报表、指标</span><kbd>Ctrl K</kbd></button>}
+          <button className={`workspace-switch ${isAdmin ? 'admin' : ''}`} onClick={switchMode}>{isAdmin ? <Home size={16}/> : <UserCog size={16}/>}<span>{isAdmin ? '用户端' : '管理后台'}</span></button>
           <button className="icon-button" title="消息"><Bell size={18} /><i className="notification-dot" /></button>
           <div className="user-menu"><span className="avatar">管</span><span className="user-copy"><b>平台管理员</b><small>{isAdmin ? '管理员' : '普通用户视图'}</small></span><ChevronDown size={15} /></div>
         </div>
-      </header>
-      <main className="page-content">{children}</main>
-    </section>
+      </div>
+    </header>
+    <main className="page-content">{children}</main>
   </div>
 }
 
