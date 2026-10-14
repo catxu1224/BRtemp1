@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { NavLink, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   Activity, AlertCircle, ArrowRight, BarChart3, Bell, BookOpen, Bookmark,
   Bot, Building2, Check, ChevronDown, ChevronLeft, ChevronRight, CircleHelp,
@@ -258,20 +258,117 @@ function SearchPage() {
 }
 
 function DocumentsPage() {
-  const [selected, setSelected] = useState(null)
+  const navigate = useNavigate()
   return <>
     <PageHeader eyebrow="REGULATORY DOCUMENTS" title="监管制度文档库" description="查找制度原文、沿革版本、条款释义及其关联报表和指标。" actions={<><button className="button ghost"><Download size={16}/>导出清单</button><button className="button primary"><Bell size={16}/>订阅更新</button></>} />
     <FilterBar placeholder="搜索制度名称、文号或条款内容"><Select label="业务主题"><option>资本监管</option><option>流动性风险</option><option>数据治理</option></Select><Select label="效力状态"><option>现行有效</option><option>历史版本</option></Select></FilterBar>
     <div className="content-toolbar"><span>共 <b>3,284</b> 份制度文档</span><div className="view-toggle"><button className="active">列表</button><button>按主题</button><button>按发布机构</button></div></div>
-    <div className="document-list">{documents.map(doc=><article className="document-row" key={doc.id} onClick={()=>setSelected(doc)}><div className="document-icon"><FileText size={22}/></div><div className="document-main"><div><Badge tone={doc.status==='现行有效'?'green':'neutral'}>{doc.status}</Badge><span className="doc-type">{doc.type}</span></div><h3>{doc.title}</h3><p>{doc.summary}</p><div className="tag-list">{doc.tags.map(t=><span key={t}>{t}</span>)}</div></div><div className="document-side"><span>{doc.agency}</span><b>{doc.code}</b><small>发布：{doc.date}</small><button className="icon-button"><ChevronRight size={18}/></button></div></article>)}</div>
-    <Drawer open={!!selected} onClose={()=>setSelected(null)} title={selected?.title} subtitle={selected?.code} footer={<><button className="button ghost"><Download size={16}/>下载原文</button><button className="button primary">查看完整文档 <ExternalLink size={16}/></button></>}>
-      <div className="detail-status"><Badge tone="green">{selected?.status}</Badge><span>生效日期 {selected?.effective}</span></div>
-      <div className="detail-grid"><div><small>发布机构</small><b>{selected?.agency}</b></div><div><small>制度层级</small><b>{selected?.type}</b></div><div><small>业务主题</small><b>{selected?.topic}</b></div><div><small>当前版本</small><b>V2.1</b></div></div>
-      <section className="drawer-section"><h3>内容摘要</h3><p>{selected?.summary}</p></section>
-      <section className="drawer-section"><h3>条款目录</h3>{['第一章 总则','第二章 监管要求','第三章 风险计量','第四章 监督检查','第五章 信息披露'].map((x,i)=><button className="clause-row" key={x}><span>{String(i+1).padStart(2,'0')}</span>{x}<ChevronRight size={15}/></button>)}</section>
-      <section className="drawer-section"><h3>关联知识</h3><div className="relation-grid"><span><FileBarChart/>关联报表 <b>12</b></span><span><Activity/>关联指标 <b>18</b></span><span><AlertCircle/>处罚案例 <b>46</b></span><span><CircleHelp/>条款释义 <b>23</b></span></div></section>
-    </Drawer>
+    <div className="document-list">{documents.map(doc=><article className="document-row" key={doc.id} role="link" tabIndex="0" onClick={()=>navigate(`/knowledge/docs/${doc.id}`)} onKeyDown={e=>e.key==='Enter'&&navigate(`/knowledge/docs/${doc.id}`)}><div className="document-icon"><FileText size={22}/></div><div className="document-main"><div><Badge tone={doc.status==='现行有效'?'green':'neutral'}>{doc.status}</Badge><span className="doc-type">{doc.type}</span></div><h3>{doc.title}</h3><p>{doc.summary}</p><div className="tag-list">{doc.tags.map(t=><span key={t}>{t}</span>)}</div></div><div className="document-side"><span>{doc.agency}</span><b>{doc.code}</b><small>发布：{doc.date}</small><button className="icon-button" aria-label={`查看${doc.title}`}><ChevronRight size={18}/></button></div></article>)}</div>
   </>
+}
+
+const capitalDocumentChapters = [
+  {
+    id: 'chapter-1', title: '第一章 总则', paragraphs: [
+      ['第一条', '为加强商业银行资本监管，维护银行体系稳健运行，保护存款人利益，根据《中华人民共和国银行业监督管理法》《中华人民共和国商业银行法》等法律法规，制定本办法。'],
+      ['第二条', '本办法适用于在中华人民共和国境内依法设立的商业银行。政策性银行、农村合作银行等其他银行业金融机构参照执行。'],
+      ['第三条', '商业银行资本应抵御其所面临的风险，包括信用风险、市场风险、操作风险以及其他风险。'],
+      ['第四条', '商业银行应当建立全面风险管理架构和内部资本充足评估程序，确保资本水平与风险状况和业务发展相适应。'],
+    ],
+  },
+  {
+    id: 'chapter-2', title: '第二章 资本监管指标', paragraphs: [
+      ['第五条', '商业银行资本充足率监管要求包括最低资本要求、储备资本和逆周期资本要求、系统重要性银行附加资本要求以及第二支柱资本要求。'],
+      ['第六条', '商业银行核心一级资本充足率、一级资本充足率和资本充足率应当分别不低于监管规定的最低要求。'],
+      ['第七条', '商业银行应当在最低资本要求基础上计提储备资本，并根据宏观经济金融形势和系统性风险状况执行逆周期资本要求。'],
+      ['第八条', '系统重要性银行应当按照监管规定计提附加资本，并建立资本内在约束机制。'],
+    ],
+  },
+  {
+    id: 'chapter-3', title: '第三章 资本定义', paragraphs: [
+      ['第九条', '商业银行总资本包括核心一级资本、其他一级资本和二级资本。各级资本工具应当符合损失吸收能力和持续经营要求。'],
+      ['第十条', '核心一级资本包括实收资本或普通股、资本公积、盈余公积、一般风险准备、未分配利润以及可计入部分的少数股东资本。'],
+      ['第十一条', '商业银行计算资本净额时，应当按照监管规定扣除商誉、其他无形资产、递延所得税资产以及对金融机构的资本投资等项目。'],
+    ],
+  },
+  {
+    id: 'chapter-4', title: '第四章 风险加权资产计量', paragraphs: [
+      ['第十二条', '商业银行应当按照监管规定计量信用风险、市场风险和操作风险加权资产，并确保计量数据真实、完整和可追溯。'],
+      ['第十三条', '信用风险加权资产可采用权重法或经监管认可的内部评级法计量。商业银行采用高级计量方法应满足相应资格标准。'],
+      ['第十四条', '商业银行应当建立风险暴露分类、缓释工具认定、违约定义和参数估计等管理制度，并定期验证计量结果。'],
+    ],
+  },
+  {
+    id: 'chapter-5', title: '第五章 监督检查', paragraphs: [
+      ['第十五条', '监管部门对商业银行资本充足状况实施持续监测和现场检查，评估资本管理、风险管理和内部控制的有效性。'],
+      ['第十六条', '监管部门可以根据单家银行风险状况提出更审慎的资本要求，并要求其制定资本补充和风险化解计划。'],
+      ['第十七条', '对资本充足率未达到监管要求的商业银行，监管部门有权依法采取限制分红、限制资产增长、调整高级管理人员等监管措施。'],
+    ],
+  },
+  {
+    id: 'chapter-6', title: '第六章 信息披露', paragraphs: [
+      ['第十八条', '商业银行应当按照监管规定披露资本构成、风险加权资产、资本充足率、杠杆率和风险管理等信息。'],
+      ['第十九条', '信息披露应当真实、准确、完整、及时，并保持披露口径和频率的一致性。重大事项应当及时披露。'],
+      ['第二十条', '商业银行董事会对资本充足信息披露的真实性、准确性和完整性承担最终责任。'],
+    ],
+  },
+  {
+    id: 'chapter-7', title: '第七章 附则', paragraphs: [
+      ['第二十一条', '本办法所称资本计量、风险暴露分类及相关术语，按照监管附件和配套规则执行。'],
+      ['第二十二条', '商业银行应当根据本办法完善内部制度、数据治理和信息系统，确保按期达到监管要求。'],
+    ],
+  },
+]
+
+function DocumentDetailPage() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const doc = documents.find(item => item.id === id) || documents[0]
+  const [assistantOpen, setAssistantOpen] = useState(true)
+  const [question, setQuestion] = useState('')
+  const [answer, setAnswer] = useState('')
+  const ask = () => {
+    if (!question.trim()) return
+    setAnswer('本条要求商业银行将资本约束嵌入经营决策，并确保资本水平能够持续覆盖信用、市场和操作风险。落地时应同步核对适用机构、计量方法和过渡期安排。')
+  }
+  return <div className="reading-page">
+    <nav className="reading-breadcrumb" aria-label="面包屑"><button onClick={()=>navigate('/')}>首页</button><ChevronRight size={13}/><button onClick={()=>navigate('/knowledge/docs')}>全部制度</button><ChevronRight size={13}/><span>{doc.topic}</span></nav>
+    <div className="reading-layout">
+      <article className="reading-document">
+        <header className="reading-title-block">
+          <div className="reading-status"><Badge tone="green">{doc.status}</Badge><span>{doc.type}</span></div>
+          <h1>{doc.title} <span>{doc.code}</span></h1>
+          <div className="reading-meta"><span><Clock3 size={15}/>{doc.date}</span><span><Activity size={15}/>1,286 次浏览</span><span><BookOpen size={15}/>预计阅读 28 分钟</span><button onClick={()=>navigate('/analysis/graph')}><Network size={15}/>查看知识关联</button></div>
+        </header>
+        <section className="document-prologue">
+          <dl><div><dt>办文部门：</dt><dd>国家金融监督管理总局法规司、审慎规制司</dd></div><div><dt>发文日期：</dt><dd>{doc.date}</dd></div><div><dt>公文名称：</dt><dd>国家金融监督管理总局关于发布《{doc.title}》的令</dd></div><div><dt>文号：</dt><dd>{doc.code}</dd></div></dl>
+          <h2>国家金融监督管理总局关于发布《{doc.title}》的令</h2>
+          <p>为加强商业银行资本监管，提升银行业风险抵御能力，推动商业银行强化资本约束和精细化风险管理，现发布《{doc.title}》，请认真贯彻执行。</p>
+          <p className="document-signature">国家金融监督管理总局<br/>{doc.date}</p>
+          <h2>{doc.title}</h2>
+        </section>
+        <div className="regulation-body">
+          {capitalDocumentChapters.map(chapter=><section id={chapter.id} key={chapter.id}><h2>{chapter.title}</h2>{chapter.paragraphs.map(([label,text])=><p key={label}><strong>{label}</strong>　{text}</p>)}</section>)}
+        </div>
+        <section className="reading-comments"><h3>评论</h3><div><MessageSquare size={20}/><p>当前为产品原型，评论能力将在用户体系与后端阶段接入。</p></div></section>
+        <section className="reading-related"><h3>相关推荐</h3>{documents.filter(item=>item.id!==doc.id).slice(0,3).map(item=><button key={item.id} onClick={()=>navigate(`/knowledge/docs/${item.id}`)}><span>{item.topic}</span><b>{item.title}</b><small>{item.code}</small><ChevronRight size={17}/></button>)}</section>
+      </article>
+      <aside className="reading-side">
+        <section className={`reading-assistant ${assistantOpen?'open':''}`}>
+          <header><div><BookOpen size={19}/><span><b>陪读助手</b><small>围绕当前制度解释、辨析和分析影响</small></span></div><button onClick={()=>setAssistantOpen(!assistantOpen)}>{assistantOpen?'收起陪读':'打开陪读'}</button></header>
+          {assistantOpen && <div className="assistant-body">
+            <p><b>{doc.title}</b> · 当前文档。可选中正文后提问，也可以围绕整篇制度分析。</p>
+            <div className="assistant-prompts"><button onClick={()=>setQuestion('解释这份制度的关键含义')}>解释关键含义</button><button onClick={()=>setQuestion('辨析适用机构和适用条件')}>辨析适用条件</button><button onClick={()=>setQuestion('分析对银行经营管理的实际影响')}>分析实际影响</button></div>
+            <textarea value={question} onChange={e=>setQuestion(e.target.value)} placeholder="这段规定为什么这样规定？对我们的工作有什么影响？"/>
+            {answer && <div className="assistant-answer">{answer}</div>}
+            <footer><button className="button primary" disabled={!question.trim()} onClick={ask}>继续分析</button><button className="button ghost" onClick={()=>navigate(`/search?q=${encodeURIComponent(doc.title)}`)}>去站内搜索</button></footer>
+          </div>}
+        </section>
+        <section className="reading-toc"><h3>目录</h3><nav>{capitalDocumentChapters.map((chapter,index)=><a href={`#${chapter.id}`} key={chapter.id}><span>{String(index+1).padStart(2,'0')}</span>{chapter.title}</a>)}</nav></section>
+        <section className="reading-links"><h3>相关知识</h3><button onClick={()=>navigate('/knowledge/terms')}>监管术语与标准 <ChevronRight size={15}/></button><button onClick={()=>navigate('/regulatory/metrics')}>关联监管指标 <ChevronRight size={15}/></button><button onClick={()=>navigate('/analysis/penalties')}>相关处罚案例 <ChevronRight size={15}/></button></section>
+      </aside>
+    </div>
+  </div>
 }
 
 function TermsPage() {
@@ -490,6 +587,7 @@ export default function App(){
     <Route path="/" element={<HomePage/>}/>
     <Route path="/search" element={<SearchPage/>}/>
     <Route path="/knowledge/docs" element={<DocumentsPage/>}/>
+    <Route path="/knowledge/docs/:id" element={<DocumentDetailPage/>}/>
     <Route path="/knowledge/terms" element={<TermsPage/>}/>
     <Route path="/knowledge/constraints" element={<ConstraintsPage/>}/>
     <Route path="/knowledge/frameworks" element={<FrameworkPage/>}/>
